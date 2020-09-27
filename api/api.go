@@ -1,106 +1,80 @@
 package api
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
-    "github.com/tkrouty/avitojob-trainee-task/db"
-    "github.com/tkrouty/avitojob-trainee-task/models"
-    "time"
+	"github.com/tkrouty/avitojob-trainee-task/models"
 )
 
-type AccountAPI struct {
-	DB db.DBWrapper
+type FinanceAPI struct {
+	Manager FinanceManager
 }
 
-func (a *AccountAPI) Add(c *gin.Context) {
+func (a *FinanceAPI) EditBalance(c *gin.Context) {
 	t := models.Transaction{TransactionTime: time.Now()}
 	if err := c.BindJSON(&t); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-    t.TargetID = c.Param("UserID")
+	if t.Sum > 0 {
+		t.TargetID = c.Param("UserID")
+	} else {
+		t.SourceID = c.Param("UserID")
+	}
 
-    if err := a.DB.MakeTransaction(t); err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
+	if err := a.Manager.makeTransaction(&t); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
-    }
+	}
 
 	c.JSON(200, gin.H{
 		"message": "transaction completed"})
 }
 
-func (a *AccountAPI) Deduct(c *gin.Context) {
+func (a *FinanceAPI) Transfer(c *gin.Context) {
 	t := models.Transaction{TransactionTime: time.Now()}
 	if err := c.BindJSON(&t); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-    t.SourceID = c.Param("UserID")
-
-	if err := a.DB.MakeTransaction(t); err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
-		return
-    }
-
-    c.JSON(200, gin.H{
-		"message": "transaction is successful"})
-}
-
-func (a *AccountAPI) Transfer(c *gin.Context) {
-    t := models.Transaction{TransactionTime: time.Now()}
-    if err := c.BindJSON(&t); err != nil {
+	if err := a.Manager.makeTransaction(&t); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-    if err := a.DB.MakeTransaction(t); err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
-		return
-    }
-
-    c.JSON(200, gin.H{
+	c.JSON(200, gin.H{
 		"message": "transaction is successful"})
 }
 
-func (a *AccountAPI) ShowBalance(c *gin.Context) {
-    u := models.User{}
+func (a *FinanceAPI) ShowBalance(c *gin.Context) {
+	u := models.User{UserID: c.Param("UserID")}
 
-    u.UserID = c.Param("UserID")
-
-    if err := a.DB.ShowBalance(&u); err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
+	currency := c.Query("currency")
+	balance, err := a.Manager.getBalance(&u, currency)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
-    }
+	}
 
-	var currency string
-
-	if currency = c.Query("currency"); currency != "" {
-		rate, err := getExchangeRate(currency)
-
-		if err != nil {
-			c.JSON(400, gin.H{"error": err.Error()})
-		}
-		u.Balance *= rate
-	} else {
+	if currency == "" {
 		currency = "RUB"
 	}
 
-    c.JSON(200, gin.H{
-		"data": u, "currency" : currency})
+	c.JSON(200, gin.H{
+		"user_id": u.UserID, "balance": balance, "currency": currency})
 }
 
-func (a *AccountAPI) ShowHistory(c *gin.Context) {
-    u := models.User{}
+func (a *FinanceAPI) ShowHistory(c *gin.Context) {
+	u := models.User{UserID: c.Param("UserID")}
 
-    u.UserID = c.Param("UserID")
-
-
-    transactionHistory, err := a.DB.ShowHistory(u)
-    if err != nil {
-        c.JSON(400, gin.H{"error": err.Error()})
+	transactionHistory, err := a.Manager.getHistory(&u)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
-    }
+	}
 
-    c.JSON(200, gin.H{"user": u, "transaction_history": transactionHistory})
+	c.JSON(200, gin.H{"user": u.UserID, "transaction_history": transactionHistory})
 }
