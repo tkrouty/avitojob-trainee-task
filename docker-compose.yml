@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+    db:
+        image: 'postgres'
+        container_name: 'postgres'
+        environment:
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=toor1221
+            - POSTGRES_DB=avitojob_finances
+
+        volumes:
+            - ./db-data:/var/lib/postgresql/data
+            - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+        ports:
+            - '8001:5432'
+        restart: on-failure
+
+    app:
+        build:
+            context: .
+            network: host
+        container_name: 'gin_app'
+        command: ./app
+        depends_on:
+            - db
+        environment:
+            - POSTGRES_DB_URL=postgres://root:toor1221@db:5432/avitojob_finances
+        ports:
+            - '8000:8000'
+        restart: on-failure
+
+        healthcheck:
+          test: ["CMD", "curl", "-f", "http://localhost"]
+          interval: 1m30s
+          timeout: 10s
+          retries: 3
+          start_period: 40s
