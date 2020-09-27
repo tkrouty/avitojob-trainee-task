@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"sort"
 
 	"github.com/tkrouty/avitojob-trainee-task/db"
 	"github.com/tkrouty/avitojob-trainee-task/models"
@@ -41,7 +42,7 @@ func (f *FinanceManager) makeTransaction(t *models.Transaction) error {
 func (f *FinanceManager) getBalance(u *models.User, currency string) (float64, error) {
 	balance, err := f.DB.GetBalance(u.UserID)
 	if err != nil {
-		return 0, err
+		return 0, errors.New("unable to retrieve information about specified user_id")
 	}
 
 	if currency != "" {
@@ -61,6 +62,12 @@ func (f *FinanceManager) getHistory(u *models.User) ([]models.Transaction, error
 	if err != nil {
 		return transaction_history, errors.New("unable to get transaction history, database returned an error")
 	}
+	sort.Slice(transaction_history, func(i, j int) bool {
+		return transaction_history[j].TransactionTime.Before(transaction_history[i].TransactionTime)
+	})
+	sort.Slice(transaction_history, func(i, j int) bool {
+		return transaction_history[j].Sum < transaction_history[i].Sum
+	})
 
 	return transaction_history, nil
 
