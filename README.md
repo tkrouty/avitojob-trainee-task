@@ -93,4 +93,4 @@ Response
     "user_id": "1"
 }
 ```
-Transaction history is sorted by sum and by date..
+Transaction history is sorted by sum and by date.
