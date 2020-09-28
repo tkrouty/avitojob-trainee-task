@@ -6,12 +6,15 @@ import (
 	"os"
 
 	"github.com/fvbock/endless"
+	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
 	"github.com/tkrouty/avitojob-trainee-task/db"
 	"github.com/tkrouty/avitojob-trainee-task/router"
 )
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
+
 	// creating a logger
 	file, err := os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
