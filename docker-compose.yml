@@ -26,6 +26,7 @@ services:
             - db
         environment:
             - POSTGRES_DB_URL=postgres://root:toor1221@db:5432/avitojob_finances
+            - TEST_DB_URL=postgres://root:toor1221@db:5432/test_db
         ports:
             - '8000:8000'
         restart: on-failure

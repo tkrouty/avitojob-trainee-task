@@ -7,7 +7,7 @@ import (
 	"net/url"
 )
 
-func getExchangeRate(currency string) (float64, error) {
+func getExchangeRatebyHTTP(currency string) (float64, error) {
 	baseURL, _ := url.Parse("https://api.exchangeratesapi.io/latest")
 	params := url.Values{}
 	params.Add("base", "RUB")
@@ -22,6 +22,7 @@ func getExchangeRate(currency string) (float64, error) {
 	defer resp.Body.Close()
 
 	var r struct {
+		Date  string             `json:"date"`
 		Rates map[string]float64 `json:"rates"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {

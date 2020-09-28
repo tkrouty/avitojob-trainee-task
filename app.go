@@ -23,7 +23,7 @@ func main() {
 	logger.Println("connecting to", os.Getenv("POSTGRES_DB_URL"))
 	conn, err := pgx.Connect(context.Background(), os.Getenv("POSTGRES_DB_URL"))
 	if err != nil {
-		logger.Println("unable to connect to database: %v\n", err)
+		logger.Printf("unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
 	defer conn.Close(context.Background())

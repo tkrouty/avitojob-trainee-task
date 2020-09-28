@@ -46,7 +46,7 @@ func (f *FinanceManager) getBalance(u *models.User, currency string) (float64, e
 	}
 
 	if currency != "" {
-		rate, err := getExchangeRate(currency)
+		rate, err := getExchangeRatebyHTTP(currency)
 		if err != nil {
 			return 0, errors.New("unable to get exchange rate for " + currency)
 		}
@@ -61,6 +61,9 @@ func (f *FinanceManager) getHistory(u *models.User) ([]models.Transaction, error
 	transaction_history, err := f.DB.GetHistory(u.UserID)
 	if err != nil {
 		return transaction_history, errors.New("unable to get transaction history, database returned an error")
+	}
+	if len(transaction_history) == 0 {
+		return transaction_history, errors.New("couldn't find transaction history for specified user_id")
 	}
 	sort.Slice(transaction_history, func(i, j int) bool {
 		return transaction_history[j].TransactionTime.Before(transaction_history[i].TransactionTime)
