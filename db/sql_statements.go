@@ -13,12 +13,12 @@ func balanceEditStatement(userID string, sum float64) string {
         `, userID, sum)
 }
 
-func showBalanceStatement(userID string) string {
+func getBalanceStatement(userID string) string {
 	return fmt.Sprintf(`SELECT balance FROM accounts WHERE user_id='%[1]v';`,
 		userID)
 }
 
-func showHistoryStatement(userID string) string {
+func getHistoryStatement(userID string) string {
 	return fmt.Sprintf(`SELECT * FROM transaction_history WHERE source_id='%[1]v'
         OR target_id='%[1]v';`, userID)
 }

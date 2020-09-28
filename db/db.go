@@ -18,6 +18,7 @@ func (db *DBWrapper) EditBalance(userID string, sum float64) error {
 	command := balanceEditStatement(userID, sum)
 	db.Logger.Println(command)
 	if _, err := db.Conn.Exec(context.Background(), command); err != nil {
+		db.Logger.Println(err.Error())
 		return err
 	}
 
@@ -30,6 +31,7 @@ func (db *DBWrapper) WriteHistory(sourceID string, targetID string,
 	command := writeHistoryStatement(sourceID, targetID, sum, transactionTime)
 	db.Logger.Println(command)
 	if _, err := db.Conn.Exec(context.Background(), command); err != nil {
+		db.Logger.Println(err.Error())
 		return err
 	}
 
@@ -39,10 +41,11 @@ func (db *DBWrapper) WriteHistory(sourceID string, targetID string,
 func (db *DBWrapper) GetBalance(userID string) (float64, error) {
 	var balance float64
 
-	command := showBalanceStatement(userID)
+	command := getBalanceStatement(userID)
 	db.Logger.Println(command)
 
 	if err := db.Conn.QueryRow(context.Background(), command).Scan(&balance); err != nil {
+		db.Logger.Println(err.Error())
 		return 0, err
 	}
 
@@ -52,10 +55,11 @@ func (db *DBWrapper) GetBalance(userID string) (float64, error) {
 func (db *DBWrapper) GetHistory(userID string) ([]models.Transaction, error) {
 	var res []models.Transaction
 
-	command := showHistoryStatement(userID)
+	command := getHistoryStatement(userID)
 	db.Logger.Println(command)
 	rows, err := db.Conn.Query(context.Background(), command)
 	if err != nil {
+		db.Logger.Println(err.Error())
 		return res, err
 	}
 	defer rows.Close()
