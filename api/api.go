@@ -21,6 +21,7 @@ func (a *FinanceAPI) EditBalance(c *gin.Context) {
 	if t.Sum > 0 {
 		t.TargetID = c.Param("UserID")
 	} else {
+		t.Sum = -t.Sum
 		t.SourceID = c.Param("UserID")
 	}
 
@@ -37,6 +38,10 @@ func (a *FinanceAPI) Transfer(c *gin.Context) {
 	t := models.Transaction{TransactionTime: time.Now()}
 	if err := c.BindJSON(&t); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	if t.Sum <= 0 {
+		c.JSON(400, gin.H{"error": "transfer sum must be positive"})
 		return
 	}
 
@@ -76,5 +81,5 @@ func (a *FinanceAPI) ShowHistory(c *gin.Context) {
 		return
 	}
 
-	c.JSON(200, gin.H{"user": u.UserID, "transaction_history": transactionHistory})
+	c.JSON(200, gin.H{"user_id": u.UserID, "transaction_history": transactionHistory})
 }
