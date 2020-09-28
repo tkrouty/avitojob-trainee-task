@@ -94,3 +94,9 @@ Response
 }
 ```
 Transaction history is sorted by sum and by date.
+
+# Running tests
+
+```shell
+$ docker exec -it gin_app ./run_tests.sh
+```
