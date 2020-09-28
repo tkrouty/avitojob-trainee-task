@@ -51,7 +51,7 @@ func (a *FinanceAPI) Transfer(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"message": "transaction is successful"})
+		"message": "transaction completed"})
 }
 
 func (a *FinanceAPI) ShowBalance(c *gin.Context) {
