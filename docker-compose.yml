@@ -17,9 +17,7 @@ services:
         restart: on-failure
 
     app:
-        build:
-            context: .
-            network: host
+        build: .
         container_name: 'gin_app'
         command: ./app
         depends_on:
