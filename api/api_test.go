@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"github.com/tkrouty/avitojob-trainee-task/db"
 	"github.com/tkrouty/avitojob-trainee-task/models"
 	"github.com/tkrouty/avitojob-trainee-task/test"
@@ -40,7 +42,10 @@ func BeforeTest() {
 		Conn:   tester.DB,
 		Logger: tester.Logger,
 	}
-	TestFinanceManager = FinanceManager{DB: TestDBWrapper}
+	TestFinanceManager = FinanceManager{
+		DB:    TestDBWrapper,
+		Cache: cache.New(5*time.Minute, 10*time.Minute),
+	}
 	TestFinanceAPI = FinanceAPI{Manager: TestFinanceManager}
 	TestServer = httptest.NewServer(setupTestRouter())
 }

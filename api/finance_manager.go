@@ -4,12 +4,14 @@ import (
 	"errors"
 	"sort"
 
+	"github.com/patrickmn/go-cache"
 	"github.com/tkrouty/avitojob-trainee-task/db"
 	"github.com/tkrouty/avitojob-trainee-task/models"
 )
 
 type FinanceManager struct {
-	DB db.DBWrapper
+	DB    db.DBWrapper
+	Cache *cache.Cache
 }
 
 func (f *FinanceManager) makeTransaction(t *models.Transaction) error {
@@ -46,9 +48,17 @@ func (f *FinanceManager) getBalance(u *models.User, currency string) (float64, e
 	}
 
 	if currency != "" {
-		rate, err := getExchangeRatebyHTTP(currency)
-		if err != nil {
-			return 0, errors.New("unable to get exchange rate for " + currency)
+		var rate float64
+
+		if x, found := f.Cache.Get(currency); found {
+			rate = x.(float64)
+		} else {
+			rateFromHTTP, err := getExchangeRatebyHTTP(currency)
+			if err != nil {
+				return 0, errors.New("unable to get exchange rate for " + currency)
+			}
+			f.Cache.Set(currency, rateFromHTTP, cache.DefaultExpiration)
+			rate = rateFromHTTP
 		}
 		balance *= rate
 	}
